@@ -2,17 +2,15 @@ import React from "react";
 
 import "components/Appointment/styles.scss";
 
+import useVisualMode from "hooks/useVisualMode";
+
 import Header from "components/Appointment/Header";
 import Empty from "components/Appointment/Empty";
 import Show from "components/Appointment/Show";
-import Form from "components/Appointment/Form";
-
-import useVisualMode from "hooks/useVisualMode";
-
-// Placeholder components
-const Status = () => <div>Status component</div>;
-const Confirm = () => <div>Confirm component</div>;
-const Error = () => <div>Error component</div>;
+import Form from "./Form";
+import Status from "./Status";
+import Confirm from "./Confirm";
+import Error from "./Error";
 
 // Define mode constants
 const EMPTY = "EMPTY";
@@ -32,16 +30,6 @@ export default function Appointment(props) {
     const { mode, transition, back } = useVisualMode(
       props.interview ? SHOW : EMPTY
     );
-  
-    // Function to transition to CREATE mode when add appointment clicked
-    const handleAddAppointment = () => {
-      transition(CREATE);
-    };
-  
-    // Function to handle canceling appointment 
-    const handleCancel = () => {
-      back();
-    };
   
     // Function to save appointment
     function save(name, interviewer) {
@@ -71,9 +59,9 @@ export default function Appointment(props) {
     return (
       <article className="appointment" data-testid="appointment">
         <Header time={props.time} />
-        {/* Render Empty component when mode is EMPTY */}
-        {mode === EMPTY && <Empty onAdd={handleAddAppointment} />}
-        {/* Render Show component when mode is SHOW */}
+        {/* Render Empty component if mode is EMPTY */}
+        {mode === EMPTY &&  <Empty onAdd={() => transition(CREATE)} />}
+        {/* Render Show component if mode is SHOW */}
         {mode === SHOW && (
           <Show
             student={props.interview.student}
@@ -82,11 +70,13 @@ export default function Appointment(props) {
             onEdit={() => transition(EDIT)}
           />
         )}
-        {/* Render Form component when mode is CREATE */}
+        {/* Render Form component if mode is CREATE */}
         {mode === CREATE && (
-          <Form interviewers={props.interviewers} onCancel={back} onSave={save} />
+          <Form interviewers={props.interviewers} 
+          onCancel={back} 
+          onSave={save} />
         )}
-        {/* Render Form component for editing when mode is EDIT */}
+        {/* Render Form component for editing if mode is EDIT */}
         {mode === EDIT && (
           <Form
             name={props.interview.student}
@@ -96,10 +86,10 @@ export default function Appointment(props) {
             onSave={save}
           />
         )}
-        {/* Render Status component when mode is SAVING or DELETING */}
-        {mode === SAVING && <Status />}
-        {mode === DELETING && <Status />}
-        {/* Render Confirm component when mode is CONFIRM */}
+        {/* Render Status component if mode is SAVING or DELETING */}
+        {mode === SAVING && <Status message="Saving" />}
+        {mode === DELETING && <Status message="Deleting" />}
+        {/* Render Confirm component if mode is CONFIRM */}
         {mode === CONFIRM && (
           <Confirm
             message="Are you sure you would like to delete?"
@@ -108,8 +98,10 @@ export default function Appointment(props) {
           />
         )}
         {/* Render Error component when mode is ERROR_SAVE or ERROR_DELETE */}
-        {mode === ERROR_SAVE && <Error />}
-        {mode === ERROR_DELETE && <Error />}
+        {mode === ERROR_SAVE && 
+        <Error message="Could not delete appointment" onClose={back} />}
+        {mode === ERROR_DELETE && 
+        <Error message="Could not save appointment" onClose={back} />}
       </article>
     );
   }
